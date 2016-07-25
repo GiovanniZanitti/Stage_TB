@@ -1,0 +1,9 @@
+Choice,Objectif_Atteint,Compet_Acquises,Heures_Travail_Passees,Satis_Videos,Satis_Supports_Ecrits,Satis_Quizz,Satis_Discussion,Satis_Serious_Game,Recommand,Inscri_Proch_Sess
+choice_0,Oui,Maitriser le vocabulaire et la terminologie telecommunications et reseaux,Moins d'1h,5,5,5,5,5,Oui,Oui
+choice_1,Non,Decrire les modeles en couches et leur interet,2h a 4h,4,4,4,4,4,Non,Non
+choice_2,Partiellement,Comprendre le fonctionnement des echanges suivant ces modeles,5h a 8h,3,3,3,3,3,,
+choice_3,,Reconnaitre le materiel utilise ainsi que les principaux services proposes a travers la notion de reseau,Plus de 8h,2,2,2,2,2,,
+choice_4,,,,1,1,1,1,1,,
+choice_5,,,,,,,,,,
+choice_6,,,,,,,,,,
+Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide

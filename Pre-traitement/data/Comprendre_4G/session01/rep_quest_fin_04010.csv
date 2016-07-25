@@ -1,0 +1,9 @@
+Choice,Objectif_Atteint,Compet_Acquises,Heures_Travail_Passees,Satis_Videos,Satis_Supports_Ecrits,Satis_Quizz,Satis_Devoirs,Satis_Exam_Final,Satis_Discussion,Satis_Anim,Recommand,Inscri_Proch_Sess
+choice_0,Oui,"Avoir une vision globale d'un reseau 4G, des specificites liees a la presence d'une transmission radio et a la necessite de gerer la mobilite",Moins d'1h,5,5,5,5,5,5,5,Oui,Oui
+choice_1,Non,Enumerer les elements d'un reseau mobile et leurs principales fonctions,2h a 4h,4,4,4,4,4,4,4,Non,Non
+choice_2,Partiellement,Analyser un echange protocolaire simple et identifier la procedure a laquelle il se rattache,5h a 8h,3,3,3,3,3,3,3,,
+choice_3,,Hierarchiser les fonctions de transport et de contrôle,Plus de 8h,2,2,2,2,2,2,2,,
+choice_4,,Etablir un diagnostic a partir de scenarios correspondant a un service non fourni,,1,1,1,1,1,1,1,,
+choice_5,,,,,,,,,,,,
+choice_6,,,,,,,,,,,,
+Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide

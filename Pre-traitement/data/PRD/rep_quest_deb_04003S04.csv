@@ -1,0 +1,14 @@
+Choice,Categ_Socio_Prof,Taille_Ent,Domaine_Activite,Connaissance_Cours,Premier_Objectif,Niveau_Depart,Heures_Travail_Prevues
+choice_0,"Artisan, commercant ou chef d'entreprise",Une personne,Industrie extractives,Par mon entreprise ou mon universite/ecole,"Curiosite pour le domaine, me cultiver",Debutant,Moins d'1h
+choice_1,Enseignant(e),Moins de 10,Industrie manufacturiere,Par les reseaux sociaux,Ameliorer mes competences pour ma carriere,Intermediaire,1h a 2h
+choice_2,Cadre ou profession intellectuelle superieure,Entre 10 et 50,"Production et distribution d'electricite, de gaz, de vapeur et d'airconditionne",Par la presse,Tester l'enseignement en ligne,Experimente,2h a 4h
+choice_3,Profession intermediaire,Moins de 500,"Production et distribution d'eau ou assainissement, gestion des dechets et depollution",Par le bouche e oreilles,Autre,Professionnel,4h a 8h
+choice_4,Employee,Plus de 500,Construction,Par la plateforme FUN,,,Plus de 8h
+choice_5,Ouvrier(iere),,Transports et entreposage,Autre,,,
+choice_6,Retraite(e),,"Activites specialisees, scientifiques et techniques",,,,
+choice_7,Etudiant(e),,Activites de services administratifs et de soutien,,,,
+choice_8,En recherche d'emploi,,Administration publique,,,,
+choice_9,sans activite professionnelle,,Enseignement,,,,
+choice_10,,,Autre activites de services,,,,
+choice_11,,,Activites extra-territoriales,,,,
+Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide

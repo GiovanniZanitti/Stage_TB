@@ -1,0 +1,14 @@
+Choice,Connaissance_Cours,Deja_Suivi,Connexion_IMT
+choice_0,Via FUN,Oui,Aucune connexion
+choice_1,Via l institut Mines-Telecom,Non,Etudiant actuel dans l'une des ecoles
+choice_2,"Facebook, Twitter ou autre",,Ancien etudiant
+choice_3,Via YouTube,,Membre du personnel
+choice_4,Recherche sur Google,,Ancien membre du personnel
+choice_5,Presse,,Un membre de ma famille a une connexion avec l'IMT
+choice_6,Bouche-a-oreille,,
+choice_7,Via votre entreprise,,
+choice_8,Autre,,
+choice_9,,,
+choice_10,,,
+choice_11,,,
+Vide,Vide,Vide,Vide

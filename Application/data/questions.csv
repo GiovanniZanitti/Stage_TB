@@ -1,0 +1,36 @@
+code_Q,label_Q
+Categ_Socio_Prof,Categorie professionnelle ?
+Taille_Ent,Quelle est la taille de votre entrepriseﾠ?
+Domaine_Activite,Votre domaine d'activite principale estﾠ?
+Connaissance_Cours,Comment avez vous eu connaissance de ce coursﾠ?
+Premier_Objectif,Pour quelle raisons ce MOOC vous interesse t ilﾠ?
+Niveau_Depart,"Concernant le sujet du MOOC, comment estimez vous votre niveau de departﾠ?"
+Heures_Travail_Prevues,Combien d'heures par semaine avez vous prevu de consacrer au MOOCﾠ?
+gender,Genre ?
+year_of_birth,Annee de naissance ?
+level_of_education,Plus haut niveau d'etude ?
+Objectif_Atteint,Avez-vous atteint vos objectifs ?
+Compet_Acquises,"Parmi les competences visees dans ce MOOC, lesquelles estimez vous avoir acquises ?"
+Heures_Travail_Passees,Combien d'heures par semaine avez vous passé sur le MOOCﾠ?
+Satis_Videos,Satisfaction pour les vidéos (5 etant « extremement satisfait »)
+Satis_Supports_Ecrits,Satisfaction pour les supports ecrits (5 etant « extremement satisfait »)
+Satis_Quizz,Satisfaction pour les quizz (5 etant « extremement satisfait »)
+Satis_Discussion,Satisfaction pour les discussion (5 etant « extremement satisfait »)
+Satis_Serious_Game,Satisfaction pour les serious game (5 etant « extremement satisfait »)
+Recommand,Recommandereiz-vous le MOOC a des amis ou a des collegues ?
+Inscri_Proch_Sess,Souhaiteriez-vous que nous vous inscrivions automatiquement a la prochaine session de MOOC ?
+Satis_TD,Satisfaction pour les travaux dirigés (5 etant « extremement satisfait »)
+Satis_TP,Satisfaction pour les travaux pratiques (5 etant « extremement satisfait »)
+Satis_Exam,Satisfaction pour les examens (5 etant « extremement satisfait »)
+Satis_Temoignagnes_Pros,Satisfaction pour les temoignagnes professionnels (5 etant « extremement satisfait »)
+Satis_Forums,Satisfaction pour les forums (5 etant « extremement satisfait »)
+Satis_Ex_s0,Satisfaction pour l'exercice de la S0 en evaluation par les pairs (5 etant « extremement satisfait »)
+Satis_Rythme,Satisfaction pour le rythme (5 etant « extremement satisfait »)
+Age,Age
+C_Age,Classe d'age
+country,Pays
+Satis_Exos,Satisfaction pour les exercices (5 etant « extremement satisfait »)
+Satis_LAB,Satisfaction pour le LAB (5 etant « extremement satisfait »)
+Satis_Exam_Final,Satisfaction pour l'examen final (5 etant « extremement satisfait »)
+Satis_Anim,Satisfaction pour l'animation du cours (5 etant « extremement satisfait »)
+Satis_Devoirs,Satisfaction pour les devoirs de la semaine (5 etant « extremement satisfait »)

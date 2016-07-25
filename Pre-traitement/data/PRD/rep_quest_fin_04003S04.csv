@@ -1,0 +1,9 @@
+Choice,Objectif_Atteint,Compet_Acquises,Heures_Travail_Passees,Satis_Videos,Satis_Supports_Ecrits,Satis_Quizz,Satis_TD,Satis_TP,Satis_Exam,Satis_Temoignages_Pros,Satis_Forums,Satis_Ex_s0,Satis_Rythme,Recommand,Inscri_Proch_Sess
+choice_0,Oui,Savoir analyser les proprietes d'un service et en deduire les besoins en termes de reseau,Moins d'1h,5,5,5,5,5,5,5,5,5,5,Oui,Oui
+choice_1,Non,"Connaitre les architectures reseaux, les mecanismes reseaux, pile de protocoles etc.",2h a 4h,4,4,4,4,4,4,4,4,4,4,Non,Non
+choice_2,Partiellement,"Connaitre l'internet IP, TCP et UDP et leurs propretes",5h a 8h,3,3,3,3,3,3,3,3,3,3,,
+choice_3,,"routage approprie, configurer le routage",Plus de 8h,2,2,2,2,2,2,2,2,2,2,,
+choice_4,,Savoir utiliser un analyseur de reseau,,1,1,1,1,1,1,1,1,1,1,,
+choice_5,,Savoir lire et interpreter le contenu d'une trame captee sur un reseau,,,,,,,,,,,,,
+choice_6,,"Savoir lire et comprendre une norme de reseau de donnees, reseau de telecoms",,,,,,,,,,,,,
+Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide,Vide
