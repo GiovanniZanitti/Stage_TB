@@ -40,14 +40,19 @@ p_num <- ggplot(data = sqldf("Select DISTINCT id, Age from dff where Quest = 'de
   geom_histogram(binwidth = 5, color="white", fill="green") + 
   xlab("Age") 
 ggplotly(p_num)
+ok
 
 
 
-
-
-
+ok <- sqldf("Select variable from df_var where course = 'Comprendre la 4G' and session = 'session01' and Quest = 'debut'")
+ok <- as.character(ok$variable)[-c(1:5)]
+ok <- ok[-c((length(ok)-2):length(ok))]
 
 
 
 
 dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC & dff$session == input$sel_Sess,]
+
+vec <- names(df)
+vec2 <- names(df_temp)
+dframe <- data.frame(course = 'ok',session = 'ouais',quest = "deb",variables = vec)

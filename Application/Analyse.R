@@ -77,10 +77,16 @@ inscr = cbind(inscr,Date = as.Date(inscr$enrollment_time))
 ### dff (Final dataframe)
 
 dff <- data.frame()
+df_var = data.frame(course = NULL,session = NULL, Quest = NULL,variable = NULL)
 for(i in list.files("data/MOOC/")){
   for(j in list.files(paste("data/MOOC/",i, sep = ""))){
     for(k in list.files(paste("data/MOOC/",i,"/",j, sep =""))){
       data <- read.csv(paste("data/MOOC/",i,"/",j,"/",k,sep = ""), header = T)
+      data <- cbind(data, short_code = substr(data$course,0,18), session = sub(".*/", "", data$course))
+      data = sqldf("Select data.*, course.name_course from data, course where short_code = code_course")
+      vec <- names(data)
+      df_var_temp <- data.frame(course = as.character(unique(data$name_course)), session = as.character(unique(data$session)), Quest = as.character(unique(data$Quest)), variable = vec)
+      df_var <- rbind(df_var,df_var_temp)
       dff <- smartbind(dff,data)
     }
   }
@@ -99,8 +105,8 @@ inscr = cbind(inscr, short_code = substr(inscr$course,0,18), session = sub(".*/"
 inscr = sqldf("Select inscr.*, course.name_course from inscr, course where short_code = code_course")
 
 
-dff = cbind(dff, short_code = substr(dff$course,0,18), session = sub(".*/", "", dff$course))
-dff = sqldf("Select dff.*, course.name_course from dff, course where short_code = code_course")
+#dff = cbind(dff, short_code = substr(dff$course,0,18), session = sub(".*/", "", dff$course))
+#dff = sqldf("Select dff.*, course.name_course from dff, course where short_code = code_course")
 
 
 #Remplacement des valeurs vides

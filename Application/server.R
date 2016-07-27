@@ -23,8 +23,12 @@ shinyServer(function(input, output) {
   ###################### UI et reactive ############################
   
   Var_act <- reactive({
-    names(dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC,][1,-which(is.na(dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC,][1,]))])[-c(1:4)]
-  })
+    #names(dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC,][1,-which(is.na(dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC,][1,]))])[-c(1:4)]
+    ok <- sqldf(paste("Select variable from df_var where course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' and Quest = '",input$sel_Quest,"'", sep = ""))
+    ok <- as.character(ok$variable)[-c(1:5)]
+    ok <- ok[-c((length(ok)-2):length(ok))]
+    ok
+    })
   
   
   Session <- reactive({
