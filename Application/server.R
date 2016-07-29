@@ -11,7 +11,7 @@ library(reshape2)
 library(gridExtra)
 library(scales)
 
-#Appel à d'autres fichiers
+#Appel ? d'autres fichiers
 source("Analyse.R")
 source("jauge.R")
 
@@ -27,15 +27,25 @@ shinyServer(function(input, output) {
     ok <- sqldf(paste("Select variable from df_var where course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' and Quest = '",input$sel_Quest,"'", sep = ""))
     ok <- as.character(ok$variable)[-c(1:5)]
     ok <- ok[-c((length(ok)-2):length(ok))]
-    ok
+    c(ok,"Age","C_Age")
     })
+  
+  Var_actt <- reactive({
+    #names(dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC,][1,-which(is.na(dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC,][1,]))])[-c(1:4)]
+    ok <- sqldf(paste("Select variable from df_var where course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' and Quest = '",input$sel_Questt,"'", sep = ""))
+    ok <- as.character(ok$variable)[-c(1:5)]
+    ok <- ok[-c((length(ok)-2):length(ok))]
+    c(ok,"Age","C_Age")
+  })
   
   
   Session <- reactive({
     as.character(unlist(sqldf(paste("Select distinct session from dff where name_course = '",input$sel_MOOC,"'", sep = ""))))
   })
   
-  
+  Uni <- reactive({
+    eval(parse(text = paste("switch(input$selVarUni,", final, ")")))
+  })
   
   Biv1 <- reactive({
     eval(parse(text = paste("switch(input$selVarBiv1,", final, ")")))
@@ -49,16 +59,19 @@ shinyServer(function(input, output) {
   
   
   
-  
+  output$selec_VarUni <- renderUI ({
+    selectInput("selVarUni","Variable 1",
+                choices = Var_act())
+  })
   
   output$selec_VarBiv1 <- renderUI ({
     selectInput("selVarBiv1","Variable 1",
-                choices = Var_act())
+                choices = Var_actt())
   })
   
   output$selec_VarBiv2 <- renderUI ({
     selectInput("selVarBiv2","Variable 2",
-                choices = Var_act()[Var_act() != input$selVarBiv1])
+                choices = Var_actt()[Var_actt() != input$selVarBiv1])
   })
   
   output$selec_Session <- renderUI ({
@@ -80,7 +93,14 @@ shinyServer(function(input, output) {
     paste("Nombre d'inscrits : ",nb)
   })
   
-  
+  output$Nb_pie_inscrit <- renderText({
+    gd <- data.frame(sqldf(paste("Select gender,count(course) as nb from inscr where name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' group by gender", sep = "")))
+    gd <- gd[!gd$gender == "",]
+    gd <- gd[!gd$gender == "Vide",]
+    nb <- sum(gd$nb)
+    paste(nb,"inscrits concernÃ©s")
+    
+  }) 
   output$pie_inscrit <- renderPlot({
     gd <- data.frame(sqldf(paste("Select gender,count(course) as nb from inscr where name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' group by gender", sep = "")))
     gd <- gd[!gd$gender == "",]
@@ -89,15 +109,20 @@ shinyServer(function(input, output) {
     pie(gd$nb, labels = paste(gd$gender,";",round(gd$nb,2),"%"), col = c("lightsalmon2","slateblue2","lightgreen"), main = "Repartition des genres")
   })
   
- 
+ output$Nb_age_inscrit <- renderText({
+   ok<-sqldf(paste("Select user,C_Age from inscr where name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
+   nb <- nrow(ok[which(is.na(ok)),])
+   paste(nrow(ok)-nb,"inscrits concernÃ©s")
+ })
 
-  output$age_inscrit <- renderPlotly({
+  output$age_inscrit <- renderPlot({
     
    
     
     p_age <- ggplot(data = sqldf(paste("Select * from inscr where name_course = '",input$sel_MOOC,"'", sep = "")), aes(C_Age), fill = factor(C_Age)) + #DonnÃƒÂ©es du graphique
       # Type de graphique
-      geom_bar(aes(y = ((..count..)/sum(..count..))*100), color="white", fill="green") + 
+      geom_bar(aes(y = ((..count..)/sum(..count..))*100), color="white", fill="green") +   
+      geom_text(aes(y = ((..count..)/sum(..count..))*100, label = scales::percent((..count..)/sum(..count..))), vjust = -0.25,stat = "count", color="black") +
       # Taille des ÃƒÂ©lÃƒÂ©ments des axes
       theme(text = element_text(size=10),
             axis.text.x = element_text(angle=0, vjust=1)) + 
@@ -111,17 +136,17 @@ shinyServer(function(input, output) {
       xlab("Classe d'age")
     
     # Affichage avec plotly
-    ggplotly(p_age)
+    p_age
     
   })
   
   
-  output$courbe_inscrit <- renderPlotly({
+  output$courbe_inscrit <- renderPlot({
     p <- ggplot(data=inscr[inscr$name_course == input$sel_MOOC & inscr$session == input$sel_Sess,], aes(x=Date))  + geom_line(stat = "count") +
       ggtitle("Evolution du nombre d'inscription au MOOC") +
       geom_vline(xintercept=as.numeric(as.Date(input$dates)),
                  linetype=4, colour="black")
-    ggplotly(p)
+    p
   })
   
   
@@ -134,7 +159,7 @@ shinyServer(function(input, output) {
   
   
   output$Nb_debut <- renderText({
-    #Récupération des données via SQL
+    #R?cup?ration des donn?es via SQL
     nb <- sqldf(paste("Select count(DISTINCT id) from dff where Quest = 'debut' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
     #Affichage
     paste("Nombre de repondant au questionnaire de debut de cours : ",nb)
@@ -148,7 +173,10 @@ shinyServer(function(input, output) {
   })
   
   output$Nb_debut3 <- renderText({
-    nb <- sqldf(paste("Select count(DISTINCT id) from dff where Quest = 'debut' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
+    gd <- sqldf(paste("Select gender,count(DISTINCT id) as nb from dff where Quest = 'debut' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' group by gender",sep = ""))
+    gd <- gd[!gd$gender == "",]
+    gd <- gd[!gd$gender == "Vide",]
+    nb <- sum(gd$nb)
     print(paste(nb,"inscrits concernÃ©s"))
   })
   
@@ -164,9 +192,16 @@ shinyServer(function(input, output) {
         main = "Repartition des genres")
   })
   
-  output$age_debut <- renderPlotly({
-    p_age <- ggplot(data = sqldf(paste("Select DISTINCT id,C_age from dff where name_course = '",input$sel_MOOC,"' and Quest = 'debut'", sep ="")), aes(C_Age), fill = factor(C_Age)) +
-      geom_bar(aes(y = ((..count..)/sum(..count..))*100), color="white", fill="green") + 
+  output$Nb_age_debut <- renderText({
+    ok<-sqldf(paste("Select DISTINCT id,Age from dff where name_course = '",input$sel_MOOC,"' and Quest = 'debut' and session = '",input$sel_Sess,"'",sep = ""))
+    nb <- nrow(ok[which(is.na(ok)),])
+    paste(nrow(ok)-nb,"inscrits concernÃ©s")
+  })
+  
+  output$age_debut <- renderPlot({
+    p_age <- ggplot(data = sqldf(paste("Select DISTINCT id,C_age from dff where name_course = '",input$sel_MOOC,"' and Quest = 'debut' and session = '",input$sel_Sess,"'", sep ="")), aes(C_Age), fill = factor(C_Age)) +
+      geom_bar(aes(y = ((..count..)/sum(..count..))*100), color="white", fill="green") +    
+      geom_text(aes(y = ((..count..)/sum(..count..))*100, label = scales::percent((..count..)/sum(..count..))), vjust = -0.25,stat = "count", color="black") +
       theme(text = element_text(size=10),
             axis.text.x = element_text(angle=0, vjust=1)) + 
       theme(legend.position="none") + 
@@ -212,17 +247,24 @@ shinyServer(function(input, output) {
         main = "Repartition des genres")
   })
   
-  output$age_fin <- renderPlotly({
+  output$Nb_age_fin <- renderText({
+    ok<-sqldf(paste("Select DISTINCT id,Age from dff where name_course = '",input$sel_MOOC,"' and Quest = 'fin' and session = '",input$sel_Sess,"'",sep = ""))
+    nb <- nrow(ok[which(is.na(ok)),])
+    paste(nrow(ok)-nb,"inscrits concernÃ©s")
+  })
+  
+  output$age_fin <- renderPlot({
     
     p_age <- ggplot(data = sqldf(paste("Select DISTINCT id,C_age from dff where name_course = '",input$sel_MOOC,"' and Quest = 'fin'", sep ="")), aes(C_Age), fill = factor(C_Age)) +
-      geom_bar(aes(y = ((..count..)/sum(..count..))*100), color="white", fill="green") + 
+      geom_bar(aes(y = ((..count..)/sum(..count..))*100), color="white", fill="green") +    
+      geom_text(aes(y = ((..count..)/sum(..count..))*100, label = scales::percent((..count..)/sum(..count..))), vjust = -0.25,stat = "count", color="black") +
       theme(text = element_text(size=10),
             axis.text.x = element_text(angle=0, vjust=1)) + 
       theme(legend.position="none") + 
       ggtitle("% des inscrit par classe d'age") +
       ylab("(%)") +
       xlab("Classe d'age")
-    ggplotly(p_age)
+    p_age
     
   })
   
@@ -258,7 +300,7 @@ shinyServer(function(input, output) {
     )
     
     
-    #Boucles pour afficher le résultat en "+/- x pts"
+    #Boucles pour afficher le r?sultat en "+/- x pts"
     vec <- NULL
     for(i in 1:nrow(res_Gend)){
       vec <- c(vec,
@@ -278,14 +320,14 @@ shinyServer(function(input, output) {
   output$tab_Ages <- renderDataTable({
     
     
-    #Import des données du questionnaire de début
+    #Import des donn?es du questionnaire de d?but
     df_age <- sqldf(paste("Select C_age, count(DISTINCT id) as nb from dff where Quest = 'debut' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' group by C_age", sep = ""))
     #Transformation en pourcentage
     df_age$nb <- (df_age$nb/sum(df_age$nb))*100
     df_age <- df_age[!is.na(df_age$C_Age),]
     rownames(df_age) <- df_age$C_Age
     
-    #Import des données du questionnaire de fin
+    #Import des donn?es du questionnaire de fin
     df_age2 <- sqldf(paste("Select C_age, count(DISTINCT id) as nb from dff where Quest = 'fin' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' group by C_age", sep = ""))
     df_age2$nb <- (df_age2$nb/sum(df_age2$nb))*100
     df_age2 <- df_age2[!is.na(df_age2$C_Age),]
@@ -302,7 +344,7 @@ shinyServer(function(input, output) {
       as.character(df_age_bind[rownames(df_age_bind) == res_Age[which(is.na(res_Age$diff)),]$C_Age,]$debut)
     )
     
-    #Boucles pour afficher le résultat en "+/- x pts"
+    #Boucles pour afficher le r?sultat en "+/- x pts"
     vec <- NULL
     for(i in 1:nrow(res_Age)){
       vec <- c(vec,
@@ -331,7 +373,7 @@ shinyServer(function(input, output) {
   ############################### Descriptif ################################
   
   output$text_uni <- renderText({
-    paste("Distribution de ",input$selVarBiv1)
+    paste("Distribution de ",input$selVarUni)
   })
   
   output$Nb_desc <- renderText({
@@ -339,30 +381,30 @@ shinyServer(function(input, output) {
     paste(nb,"personnes concernÃ©s")
   })
   
-  output$plotUni <- renderPlotly({
+  output$plotUni <- renderPlot({
     #Si la variable choisie est quantitative
-    if(is.numeric(Biv1())){
+    if(is.numeric(Uni())){
       
-      df <- sqldf(paste("Select DISTINCT id, ",input$selVarBiv1," from dff where Quest = '",input$sel_Quest,"' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'",sep = ""))
-      p_num <- ggplot(data = df,aes(eval(parse(text = input$selVarBiv1)))) +
+      df <- sqldf(paste("Select DISTINCT id, ",input$selVarUni," from dff where Quest = '",input$sel_Quest,"' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'",sep = ""))
+      p_num <- ggplot(data = df,aes(eval(parse(text = input$selVarUni)))) +
         geom_histogram(binwidth = 5, color="white", fill="green") + 
-        xlab(input$selVarBiv1) 
-      ggplotly(p_num)
+        xlab(input$selVarUni) 
+      p_num
     }
     #Si la variable est qualitative
     else {
-      df <- sqldf(paste("Select DISTINCT id, ",input$selVarBiv1," from dff where Quest = '",input$sel_Quest,"' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'",sep = ""))
+      df <- sqldf(paste("Select DISTINCT id, ",input$selVarUni," from dff where Quest = '",input$sel_Quest,"' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'",sep = ""))
       
-      p_char <- ggplot(data = df, aes(factor(eval(parse(text = input$selVarBiv1))), fill = factor(eval(parse(text = input$selVarBiv1))))) +
+      p_char <- ggplot(data = df, aes(factor(eval(parse(text = input$selVarUni))), fill = factor(eval(parse(text = input$selVarUni))))) +
         geom_bar(aes(y = ((..count..)/sum(..count..))), color="white", fill="lightblue") +  
         geom_text(aes(y = ((..count..)/sum(..count..)), label = scales::percent((..count..)/sum(..count..))),stat = "count", vjust = -0.25, color="black") +
         scale_y_continuous(labels = percent) +
         theme(text = element_text(size=15),
-              axis.text.x = element_text(angle=45, vjust=1)) + 
+              axis.text.x = element_text(angle=90)) + 
         theme(legend.position="none") + 
-        xlab(input$selVarBiv1) +
+        xlab(input$selVarUni) +
         ylab("Pourcentage") 
-      ggplotly(p_char)
+      p_char
     }
   })
   
@@ -374,47 +416,47 @@ shinyServer(function(input, output) {
   })
   
   
-  output$plotBiv <- renderPlotly({
+  output$plotBiv <- renderPlot({
     #Si la variable 1 est quanti
     if(is.numeric(Biv1())){
       #Si la variable 2 est quanti
       if(is.numeric(Biv2())){
-        p <- ggplot(dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC & dff$session == input$sel_Sess,], aes(Biv1(), Biv2())) +
+        p <- ggplot(dff[dff$Quest == input$sel_Questt & dff$name_course == input$sel_MOOC & dff$session == input$sel_Sess,], aes(Biv1(), Biv2())) +
           xlab(input$selVarBiv1) +
           ylab(input$selVarBiv2)
-        ggplotly(p + geom_point()) 
+        p + geom_point()
       }
       #Si la variable 2 est quali
       else {
-        p_biv <- ggplot(data = dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC & dff$session == input$sel_Sess,], aes(factor(Biv2()),Biv1(), fill = factor(Biv2())))+
+        p_biv <- ggplot(data = dff[dff$Quest == input$sel_Questt & dff$name_course == input$sel_MOOC & dff$session == input$sel_Sess,], aes(factor(Biv2()),Biv1(), fill = factor(Biv2())))+
           geom_boxplot() + 
           theme(text = element_text(size=15),
-                axis.text.x = element_text(angle=45, vjust=1)) + 
+                axis.text.x = element_text(angle=90)) + 
           theme(legend.position="none") +
           xlab(input$selVarBiv1) +
-          ylab(input$selVarBiv2) +
+          ylab(input$selVarBiv2) 
           
           
-          ggplotly(p_biv)
+          p_biv
       }
     }
     #Si la variable 1 est quali
     else {
       #Si la variable 2 est quanti
       if(is.numeric(Biv2())){
-        p_biv <- ggplot(data = dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC & dff$session == input$sel_Sess,], aes(factor(Biv1()),Biv2(), fill = factor(Biv1())))+
+        p_biv <- ggplot(data = dff[dff$Quest == input$sel_Questt & dff$name_course == input$sel_MOOC & dff$session == input$sel_Sess,], aes(factor(Biv1()),Biv2(), fill = factor(Biv1())))+
           geom_boxplot() + 
           theme(text = element_text(size=15),
-                axis.text.x = element_text(angle=45, vjust=1)) + 
+                axis.text.x = element_text(angle=90)) + 
           theme(legend.position="none") +
           xlab(input$selVarBiv1) +
           ylab(input$selVarBiv2)
         
-        ggplotly(p_biv)
+        p_biv
       }
       #Si la variable 2 est quali 
       else {
-        tab_cont <- round((table(Biv1(), Biv2())/nrow(dff[dff$name_course == input$sel_MOOC & dff$Quest == input$sel_Quest & dff$session == input$sel_Sess,]))*100,2)
+        tab_cont <- round((table(Biv1(), Biv2())/nrow(dff[dff$name_course == input$sel_MOOC & dff$Quest == input$sel_Questt & dff$session == input$sel_Sess,]))*100,2)
         lig_cont <- melt(tab_cont)
         names(lig_cont) <- c("iplan","vplan","value")
         p_biv <- ggplot(lig_cont, aes(iplan, vplan)) +
@@ -423,10 +465,10 @@ shinyServer(function(input, output) {
           scale_size(range = c(1,15)) +
           theme_bw() + 
           theme(text = element_text(size=15),
-                axis.text.x = element_text(angle=45, vjust=1)) +
+                axis.text.x = element_text(angle=90)) +
           xlab(input$selVarBiv1) +
           ylab(input$selVarBiv2)
-        ggplotly(p_biv)
+        p_biv
       }
       
       
@@ -485,7 +527,7 @@ shinyServer(function(input, output) {
   
   ######################### Tous les mooc ####################
   
-  ####Pas utilisé pour l'instant
+  ####Pas utilis? pour l'instant
   
   
   output$Nb_tt <- renderText({
