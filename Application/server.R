@@ -22,58 +22,63 @@ shinyServer(function(input, output) {
   
   ###################### UI et reactive ############################
   
+  
+  # Variables correspondant au choix du MOOC, de la session et du questionnaire dans l'onglet "graphique à une variable"
   Var_act <- reactive({
-    #names(dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC,][1,-which(is.na(dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC,][1,]))])[-c(1:4)]
     ok <- sqldf(paste("Select variable from df_var where course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' and Quest = '",input$sel_Quest,"'", sep = ""))
     ok <- as.character(ok$variable)[-c(1:5)]
     ok <- ok[-c((length(ok)-2):length(ok))]
     c(ok,"Age","C_Age")
     })
   
+  # Variables correspondant au choix du MOOC, de la session et du questionnaire dans l'onglet "graphique à deux variables"
   Var_actt <- reactive({
-    #names(dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC,][1,-which(is.na(dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC,][1,]))])[-c(1:4)]
     ok <- sqldf(paste("Select variable from df_var where course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' and Quest = '",input$sel_Questt,"'", sep = ""))
     ok <- as.character(ok$variable)[-c(1:5)]
     ok <- ok[-c((length(ok)-2):length(ok))]
     c(ok,"Age","C_Age")
   })
   
-  
+  # Liste des sessions disponibles en fonction du MOOC choisi
   Session <- reactive({
     as.character(unlist(sqldf(paste("Select distinct session from dff where name_course = '",input$sel_MOOC,"'", sep = ""))))
   })
   
+  # Réaction au choix de la variable de l'onglet "Graphique à une variable" (Chemin vers les données, voir dans "Analyse.R" à quoi correspond l'objet "final")
   Uni <- reactive({
     eval(parse(text = paste("switch(input$selVarUni,", final, ")")))
   })
   
+  # Réaction au choix de la variable 1 de l'onglet "Graphique à deux variables"
   Biv1 <- reactive({
     eval(parse(text = paste("switch(input$selVarBiv1,", final, ")")))
   })
   
-  
-  
+  # Réaction au choix de la variable 2 de l'onglet "Graphique à deux variables"
   Biv2 <- reactive({
     eval(parse(text = paste("switch(input$selVarBiv2,", final, ")")))
   })
   
   
-  
+  # Liste déroulante pour la variable de l'onglet "Graphique à une variable", réagissant avec Var_act()
   output$selec_VarUni <- renderUI ({
-    selectInput("selVarUni","Variable 1",
+    selectInput("selVarUni","Variable",
                 choices = Var_act())
   })
   
+  # Liste déroulante pour la variable 1 de l'onglet "Graphique à deux variable", réagissant avec Var_actt()
   output$selec_VarBiv1 <- renderUI ({
     selectInput("selVarBiv1","Variable 1",
                 choices = Var_actt())
   })
   
+  # Liste déroulante pour la variable 2 de l'onglet "Graphique à deux variable", réagissant avec Var_actt()
   output$selec_VarBiv2 <- renderUI ({
     selectInput("selVarBiv2","Variable 2",
                 choices = Var_actt()[Var_actt() != input$selVarBiv1])
   })
   
+  # Liste déroulante pour choisir une session
   output$selec_Session <- renderUI ({
     selectInput("sel_Sess","Session",
                 choices = Session())
@@ -88,11 +93,13 @@ shinyServer(function(input, output) {
   
   ####### Inscrit
   
+  # Nombre d'inscrits au total
   output$Nb_inscrit <- renderText({
     nb <- sqldf(paste("Select count(course) from inscr where name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
     paste("Nombre d'inscrits : ",nb)
   })
   
+  # Nombre d'inscrits concernés par le diagramme des genres
   output$Nb_pie_inscrit <- renderText({
     gd <- data.frame(sqldf(paste("Select gender,count(course) as nb from inscr where name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' group by gender", sep = "")))
     gd <- gd[!gd$gender == "",]
@@ -101,6 +108,8 @@ shinyServer(function(input, output) {
     paste(nb,"inscrits concernés")
     
   }) 
+  
+  # Diagramme en disque des genres
   output$pie_inscrit <- renderPlot({
     gd <- data.frame(sqldf(paste("Select gender,count(course) as nb from inscr where name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' group by gender", sep = "")))
     gd <- gd[!gd$gender == "",]
@@ -109,16 +118,16 @@ shinyServer(function(input, output) {
     pie(gd$nb, labels = paste(gd$gender,";",round(gd$nb,2),"%"), col = c("lightsalmon2","slateblue2","lightgreen"), main = "Repartition des genres")
   })
   
+  # Nombre d'inscrits conercnés par le diagramme en barre des classes d'âges
  output$Nb_age_inscrit <- renderText({
    ok<-sqldf(paste("Select user,C_Age from inscr where name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
    nb <- nrow(ok[which(is.na(ok)),])
    paste(nrow(ok)-nb,"inscrits concernés")
  })
-
+  
+ # Diagramme en barre des classes d'âges
   output$age_inscrit <- renderPlot({
-    
-   
-    
+
     p_age <- ggplot(data = sqldf(paste("Select * from inscr where name_course = '",input$sel_MOOC,"'", sep = "")), aes(C_Age), fill = factor(C_Age)) + #DonnÃ©es du graphique
       # Type de graphique
       geom_bar(aes(y = ((..count..)/sum(..count..))*100), color="white", fill="green") +   
@@ -140,7 +149,7 @@ shinyServer(function(input, output) {
     
   })
   
-  
+  # courbe du nombre d'inscription / jours
   output$courbe_inscrit <- renderPlot({
     p <- ggplot(data=inscr[inscr$name_course == input$sel_MOOC & inscr$session == input$sel_Sess,], aes(x=Date))  + geom_line(stat = "count") +
       ggtitle("Evolution du nombre d'inscription au MOOC") +
@@ -152,12 +161,9 @@ shinyServer(function(input, output) {
   
   
   
-  ##### Resume debut
-  
-  
-  
-  
-  
+  ##### Questionnaire de début
+
+  # Nombre de répondant au questionnaire de début
   output$Nb_debut <- renderText({
     #R?cup?ration des donn?es via SQL
     nb <- sqldf(paste("Select count(DISTINCT id) from dff where Quest = 'debut' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
@@ -165,6 +171,7 @@ shinyServer(function(input, output) {
     paste("Nombre de repondant au questionnaire de debut de cours : ",nb)
   })
   
+  # Pourcentage par rapport à tous les inscrits
   output$Nb_debut2 <- renderText({
     nb <- sqldf(paste("Select count(course) from inscr where name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
     nb2 <- sqldf(paste("Select count(DISTINCT id) from dff where Quest = 'debut' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
@@ -172,6 +179,7 @@ shinyServer(function(input, output) {
     paste(round((nb2/nb)*100,2),"% de tous les inscrits")
   })
   
+  # Nombre d'inscrits concernés par le diagramme en disque des genres pour le questionnaire de début
   output$Nb_debut3 <- renderText({
     gd <- sqldf(paste("Select gender,count(DISTINCT id) as nb from dff where Quest = 'debut' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' group by gender",sep = ""))
     gd <- gd[!gd$gender == "",]
@@ -180,7 +188,7 @@ shinyServer(function(input, output) {
     print(paste(nb,"inscrits concernés"))
   })
   
-  
+  # Diagramme en disque des genres pour le questionnaire de début
   output$pie_debut <- renderPlot({
     gd <- sqldf(paste("Select gender,count(DISTINCT id) as nb from dff where Quest = 'debut' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' group by gender",sep = ""))
     gd <- gd[!gd$gender == "",]
@@ -192,12 +200,14 @@ shinyServer(function(input, output) {
         main = "Repartition des genres")
   })
   
+  # Nombre d'inscrit concernés par le diagramme en barre des classes d'âges du questionnaire de début
   output$Nb_age_debut <- renderText({
     ok<-sqldf(paste("Select DISTINCT id,Age from dff where name_course = '",input$sel_MOOC,"' and Quest = 'debut' and session = '",input$sel_Sess,"'",sep = ""))
     nb <- nrow(ok[which(is.na(ok)),])
     paste(nrow(ok)-nb,"inscrits concernés")
   })
   
+  # Diagramme en barre des classes d'âges du questionnaire de début
   output$age_debut <- renderPlot({
     p_age <- ggplot(data = sqldf(paste("Select DISTINCT id,C_age from dff where name_course = '",input$sel_MOOC,"' and Quest = 'debut' and session = '",input$sel_Sess,"'", sep ="")), aes(C_Age), fill = factor(C_Age)) +
       geom_bar(aes(y = ((..count..)/sum(..count..))*100), color="white", fill="green") +    
@@ -217,11 +227,13 @@ shinyServer(function(input, output) {
   ##### Resume fin
   
 
+  # Nombre de répondant au questionnaire de fin de cours
   output$Nb_fin <- renderText({
     nb <- sqldf(paste("Select count(DISTINCT id) from dff where Quest = 'fin' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
     paste("Nombre de repondant au questionnaire de fin de cours : ",nb)
   })
   
+  # Pourcentage par rapport au questionnaire de debut et au nombre total d'inscrit
   output$Nb_fin2 <- renderText({
     nb <- sqldf(paste("Select count(course) from inscr where name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
     nb2 <- sqldf(paste("Select count(DISTINCT id) from dff where Quest = 'debut' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
@@ -230,12 +242,13 @@ shinyServer(function(input, output) {
     paste(round((nb3/nb)*100,2),"% de tous les inscrits et",round((nb3/nb2)*100,2),"% des repondants au debut")
   })
   
-  
+  # Nombre d'inscrit concernés par le diagramme en disque des genres du questionnaire de fin de cours
   output$Nb_fin3 <- renderText({
     nb <- sqldf(paste("Select count(DISTINCT id) from dff where Quest = 'fin' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
     paste(nb,"inscrits concernés")
   })
   
+  # Diagramme en disque des genres du questionnaire de fin de cours
   output$pie_fin <- renderPlot({
     gd <- sqldf(paste("Select gender,count(DISTINCT id) as nb from dff where Quest = 'fin' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' group by gender",sep = ""))
     gd <- gd[!gd$gender == "",]
@@ -247,12 +260,14 @@ shinyServer(function(input, output) {
         main = "Repartition des genres")
   })
   
+  # Nombre d'inscrits concernés par le diagramme en barre des classes d'âges du questionnaire de fin 
   output$Nb_age_fin <- renderText({
     ok<-sqldf(paste("Select DISTINCT id,Age from dff where name_course = '",input$sel_MOOC,"' and Quest = 'fin' and session = '",input$sel_Sess,"'",sep = ""))
     nb <- nrow(ok[which(is.na(ok)),])
     paste(nrow(ok)-nb,"inscrits concernés")
   })
   
+  # diagramme en barre des classes d'âges du questionnaire de fin 
   output$age_fin <- renderPlot({
     
     p_age <- ggplot(data = sqldf(paste("Select DISTINCT id,C_age from dff where name_course = '",input$sel_MOOC,"' and Quest = 'fin'", sep ="")), aes(C_Age), fill = factor(C_Age)) +
@@ -272,27 +287,29 @@ shinyServer(function(input, output) {
   
   
   ##### Evolution
-
+  # Tables d'évolution des genres entre le questionnaire de début et celui de fin
   output$tab_Genres <- renderDataTable({
     
+    #Récupération des données de début
     gd <- sqldf(paste("Select gender,count(DISTINCT id) as nb from dff where Quest = 'debut' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' group by gender", sep = ""))
     gd <- gd[!gd$gender == "",]
     gd <- gd[!gd$gender == "Vide",]
     rownames(gd) <- gd$gender
-    
+    #Passage en pourcentage
     gd$nb <- (gd$nb/sum(gd$nb))*100
     
+    #Récupération des données de fin
     gd2 <- sqldf(paste("Select gender,count(DISTINCT id) as nb from dff where Quest = 'fin' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"' group by gender", sep = ""))
     gd2 <- gd2[!gd2$gender == "",]
     gd2 <- gd2[!gd2$gender == "Vide",]
     rownames(gd2) <- gd2$gender
-    
+    #Passage en pourcentage
     gd2$nb <- (gd2$nb/sum(gd2$nb))*100
-    
+    #Jointure
     df_gend_bind <- data.frame(t(smartbind(t(gd)[2,],t(gd2)[2,])))
-    
+    #Renommage des colonnes
     colnames(df_gend_bind) <- c("debut","fin")
-    
+    #Calcul de la différence
     res_Gend = data.frame(gender = rownames(df_gend_bind),diff = as.numeric(as.character(df_gend_bind$fin)) - as.numeric(as.character(df_gend_bind$debut)))
     
     res_Gend[which(is.na(res_Gend$diff)),]$diff <- - as.numeric(
@@ -317,6 +334,7 @@ shinyServer(function(input, output) {
     
   })
   
+  # Tables d'évolution des genres entre le questionnaire de début et celui de fin
   output$tab_Ages <- renderDataTable({
     
     
@@ -370,52 +388,71 @@ shinyServer(function(input, output) {
   })
   
   
-  ############################### Descriptif ################################
+  ############################### Graphique à une variable ################################
   
+  # Texte donnant le nom de variable choisi
   output$text_uni <- renderText({
     paste("Distribution de ",input$selVarUni)
   })
   
+  # Nombre d'inscrit concernés par le graphique
   output$Nb_desc <- renderText({
-    nb <- sqldf(paste("Select count(DISTINCT id) from dff where Quest = '",input$sel_Quest,"' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
-    paste(nb,"personnes concernés")
+    nb <- sqldf(paste("Select DISTINCT id, ",input$selVarUni," from dff where Quest = '",input$sel_Quest,"' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'", sep = ""))
+    nb <- nb[!is.na(nb[2]),]
+    nb <- nb[!nb[2] == "Vide",]
+    paste(nrow(nb),"personnes concernés")
   })
   
+  # Texte donnant l'intitulé exact de la question de la variable choisi
+  output$Quest_Uni <- renderText({
+    paste("Question :",Questi[Questi$code_Q == input$selVarUni,]$label_Q)
+  })
+  
+  # Graphique à une variable
   output$plotUni <- renderPlot({
     #Si la variable choisie est quantitative
     if(is.numeric(Uni())){
-      
+      # Séléction des données
       df <- sqldf(paste("Select DISTINCT id, ",input$selVarUni," from dff where Quest = '",input$sel_Quest,"' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'",sep = ""))
+      # On enlève les réponses vides
+      df <- df[!df[2] == "Vide",]
       p_num <- ggplot(data = df,aes(eval(parse(text = input$selVarUni)))) +
         geom_histogram(binwidth = 5, color="white", fill="green") + 
         xlab(input$selVarUni) 
+      # On affiche le graphique
       p_num
     }
     #Si la variable est qualitative
     else {
       df <- sqldf(paste("Select DISTINCT id, ",input$selVarUni," from dff where Quest = '",input$sel_Quest,"' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'",sep = ""))
-      
+      df <- df[!is.na(df[2]),]
+      df <- df[!df[2] == "Vide",]
       p_char <- ggplot(data = df, aes(factor(eval(parse(text = input$selVarUni))), fill = factor(eval(parse(text = input$selVarUni))))) +
         geom_bar(aes(y = ((..count..)/sum(..count..))), color="white", fill="lightblue") +  
         geom_text(aes(y = ((..count..)/sum(..count..)), label = scales::percent((..count..)/sum(..count..))),stat = "count", vjust = -0.25, color="black") +
         scale_y_continuous(labels = percent) +
-        theme(text = element_text(size=15),
-              axis.text.x = element_text(angle=90)) + 
+        theme(text = element_text(size=15)) + 
         theme(legend.position="none") + 
         xlab(input$selVarUni) +
-        ylab("Pourcentage") 
+        ylab("Pourcentage") +
+        coord_flip()
       p_char
     }
   })
   
+  ############################### Graphique à deux variables ################################
+  
+  # Texte donnant l'intitulé de la question de la variable 1 choisie
   output$text_biv1 <- renderText({
     paste("Question 1 :",Questi[Questi$code_Q == input$selVarBiv1,]$label_Q)
   })
+  
+  # Texte donnant l'intitulé de la question de la variable 2 choisie
   output$text_biv2 <- renderText({
     paste("Question 2 :",Questi[Questi$code_Q == input$selVarBiv2,]$label_Q)
   })
   
-  
+  # Graphique à deux variables
   output$plotBiv <- renderPlot({
     #Si la variable 1 est quanti
     if(is.numeric(Biv1())){
@@ -456,7 +493,10 @@ shinyServer(function(input, output) {
       }
       #Si la variable 2 est quali 
       else {
-        tab_cont <- round((table(Biv1(), Biv2())/nrow(dff[dff$name_course == input$sel_MOOC & dff$Quest == input$sel_Questt & dff$session == input$sel_Sess,]))*100,2)
+        df <- sqldf(paste("Select DISTINCT id, ",input$selVarBiv1," from dff where Quest = '",input$sel_Quest,"' and name_course = '",input$sel_MOOC,"' and session = '",input$sel_Sess,"'",sep = ""))
+        df <- df[!is.na(df[2]),]
+        #Table de contingence des variables
+        tab_cont <- round((table(Biv1(), Biv2())/nrow(df))*100,2)
         lig_cont <- melt(tab_cont)
         names(lig_cont) <- c("iplan","vplan","value")
         p_biv <- ggplot(lig_cont, aes(iplan, vplan)) +
@@ -479,39 +519,41 @@ shinyServer(function(input, output) {
   ########################## Jauge ###########################
   
   
-  output$text_jauge <- renderText({
-    paste("Jauges de satisfaction du MOOC",input$sel_MOOC,input$sel_Sess)
-  })
-  
-  output$JJauge <- renderPlot({
-    
-    
-    Var_Satis <-Satis[Satis$course == input$sel_MOOC,-which(is.na(Satis[Satis$course == input$sel_MOOC,]))]
-    
-    jauge <- NULL
-    for (i in Var_Satis[-1]){
-      commands <- paste("gg_Gauge(round(mean(as.numeric(dff[dff$Quest == 'fin' & dff$name_course == input$sel_MOOC,]$",levels(i),"))*20), '",levels(i),"'),", sep = "")
-      jauge <- paste(jauge,commands,sep = "")
-    }
-    jauge <- substr(jauge,start = 0, stop = nchar(jauge)-1)
-    
-    eval(parse(text = paste("grid.draw(arrangeGrob(",jauge,",ncol = 3))")))
-    
-    
-  })
-  
+  # output$text_jauge <- renderText({
+  #   paste("Jauges de satisfaction du MOOC",input$sel_MOOC,input$sel_Sess)
+  # })
+  # 
+  # output$JJauge <- renderPlot({
+  #   
+  #   
+  #   Var_Satis <-Satis[Satis$course == input$sel_MOOC,-which(is.na(Satis[Satis$course == input$sel_MOOC,]))]
+  #   
+  #   jauge <- NULL
+  #   for (i in Var_Satis[-1]){
+  #     commands <- paste("gg_Gauge(round(mean(as.numeric(dff[dff$Quest == 'fin' & dff$name_course == input$sel_MOOC,]$",levels(i),"))*20), '",levels(i),"'),", sep = "")
+  #     jauge <- paste(jauge,commands,sep = "")
+  #   }
+  #   jauge <- substr(jauge,start = 0, stop = nchar(jauge)-1)
+  #   
+  #   eval(parse(text = paste("grid.draw(arrangeGrob(",jauge,",ncol = 3))")))
+  #   
+  #   
+  # })
+  # 
   
   ########################## Map #############################
   
-  
+  # Texte titre de la carte
   output$text_map <- renderText({
     paste("Provenance des inscrits au MOOC",input$sel_MOOC,input$sel_Sess)
   })
   
+  # Nombre d'inscrit concernés par la carte
   output$text_map2 <- renderText({
     paste(nrow(df_map[df_map$course == input$sel_MOOC & df_map$session == input$sel_Sess,]),"inscrits ayant donnés une réponse")
   })
   
+  #Carte
   output$MapPos <- renderLeaflet({
     map <- leaflet() %>%
       #Ajout de la carte

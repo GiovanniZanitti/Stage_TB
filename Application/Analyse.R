@@ -68,9 +68,11 @@ course <- read.csv("data/Courses.csv", header = T, encoding="UTF-8")
 #### Inscriptions
 
 inscr <- read.csv(file = "data/list-enrollments-MinesTelecom.csv", header = T)
+# Calcul de l'Ã¢ge
 inscr <- cbind(inscr, Age = as.numeric(format(as.Date(inscr$enrollment_time), format = "%Y")) - as.numeric(paste(inscr$year_of_birth)))
 inscr$Age <- as.numeric(inscr$Age)
 names(inscr)[1] <- "course"
+# Passage de "enrollment_time" en type "Date" pour pouvoir l'utiliser dans les graphiques comme telle
 inscr = cbind(inscr,Date = as.Date(inscr$enrollment_time))
 
 
@@ -78,37 +80,40 @@ inscr = cbind(inscr,Date = as.Date(inscr$enrollment_time))
 
 dff <- data.frame()
 df_var = data.frame(course = NULL,session = NULL, Quest = NULL,variable = NULL)
+# Pour chaque MOOC
 for(i in list.files("data/MOOC/")){
+  # Pour chaque session de chaque MOOC
   for(j in list.files(paste("data/MOOC/",i, sep = ""))){
+    # Pour chaque fichier de chaque session de chaque MOOC
     for(k in list.files(paste("data/MOOC/",i,"/",j, sep =""))){
+      # On importe le fichier
       data <- read.csv(paste("data/MOOC/",i,"/",j,"/",k,sep = ""), header = T)
+      # On crÃ©e deux nouvelles variables donnant le code du cours et la session
       data <- cbind(data, short_code = substr(data$course,0,18), session = sub(".*/", "", data$course))
+      # On rÃ©cupÃ¨re le nom exact du cours
       data = sqldf("Select data.*, course.name_course from data, course where short_code = code_course")
+      #On rÃ©cupÃ¨re le nom des variables de ce fichier
       vec <- names(data)
       df_var_temp <- data.frame(course = as.character(unique(data$name_course)), session = as.character(unique(data$session)), Quest = as.character(unique(data$Quest)), variable = vec)
+      # On stocke les variables dans le df "df_var"
       df_var <- rbind(df_var,df_var_temp)
+      # On stocke le fichier importÃ© et modifiÃ© dans dff
       dff <- smartbind(dff,data)
     }
   }
 }
 
-#Suppression première colonne
+#Suppression premi?re colonne
 dff <- dff[-1]
-#Calcul de l'âge
+#Calcul de l'?ge
 dff <- cbind(dff, Age = as.numeric(format(as.Date(dff$enrollment_time), format = "%Y")) - as.numeric(paste(dff$year_of_birth)))
 
-#Calcul des classes d'âge
+#Calcul des classes d'?ge
 dff <- cbind(dff, C_Age = cut(dff$Age, breaks = c(0, 13, 17, 24, 34, 44, 54, 64, 100), include.lowest = TRUE))
 inscr <- cbind(inscr, C_Age = cut(inscr$Age, breaks = c(0, 13, 17, 24, 34, 44, 54, 64, 100), include.lowest = TRUE))
-#Décomposition du code cours en "short_code" et en session
+#D?composition du code cours en "short_code" et en session
 inscr = cbind(inscr, short_code = substr(inscr$course,0,18), session = sub(".*/", "", inscr$course))
 inscr = sqldf("Select inscr.*, course.name_course from inscr, course where short_code = code_course")
-
-
-#dff = cbind(dff, short_code = substr(dff$course,0,18), session = sub(".*/", "", dff$course))
-#dff = sqldf("Select dff.*, course.name_course from dff, course where short_code = code_course")
-
-
 #Remplacement des valeurs vides
 dff<-ReplaceNA(dff)
 #Passage de la variable Age et year_of_birth en quantitative
@@ -116,9 +121,14 @@ dff$Age <- as.numeric(dff$Age)
 dff$year_of_birth <- as.numeric(dff$year_of_birth)
 #Suppression des accents
 dff$country<-Unaccent(dff$country)
+#Liste de toutes les variables de dff
+List_Var_Tot = as.character(names(dff))
 
 
-########### Données pour les cartes
+# Import du fichier oÃ¹ sont stockÃ©s les intitulÃ©s des questions
+Questi <- read.csv("data/questions.csv", header = T, encoding = "UTF-8")
+
+########### Donn?es pour les cartes
 
 
 df_map <- sqldf("select inscr.*,c.lat, C.lon from inscr, coord_country c where inscr.country = c.country")
@@ -134,11 +144,10 @@ df_map <- sp::SpatialPointsDataFrame(
   data.frame(Country = df_map$country, course = df_map$name_course, session = df_map$session)
 )
 
-#Liste de toutes les variables de dff
-List_Var_Tot = as.character(names(dff))
 
 
-#Variable servant dans server.R pour rendre réactif le choix des variables
+
+#Variable servant dans server.R pour rendre r?actif le choix des variables
 final <- NULL
 for (i in List_Var_Tot){
   commands <- paste("'",i,"' = dff[dff$Quest == input$sel_Quest & dff$name_course == input$sel_MOOC & dff$session == input$sel_Sess,]$",i,",", sep = "")
@@ -186,7 +195,7 @@ Satis<-Satis[-1,]
 
 
 
-#Code pour avoir les données pour le TOP 10 des pays représentés
+#Code pour avoir les donn?es pour le TOP 10 des pays repr?sent?s
 
 nb_mooc_p <- sqldf("Select DISTINCT user,count(course) as nb,gender,age,education,country,C_Age from inscr group by user order by count(course) DESC")
 
@@ -208,7 +217,7 @@ for (i in levels(course$name_course)){
 
 tab_nb_cours_country <- tab_nb_cours_country[-1,]
 
-Questi <- read.csv("data/questions.csv", header = T, encoding = "UTF-8")
+
 
 inscr$session <- as.character(inscr$session)
 dff$session <- as.character(dff$session)
