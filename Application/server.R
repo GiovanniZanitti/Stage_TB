@@ -1,4 +1,10 @@
-# Packages utilisÃÂÃÂ©s
+# Code écrit par Giovanni Zanitti (giovanni.zanitti@gmail.com)
+# Dernière MAJ 04/08/16
+# Ce fichier contient toutes les lignes de commande nécessaire pour les différents indicateur du tableau de bord
+# Il va de paire avec le fichier UI.R
+
+
+# Packages utilisés
 
 library(shiny)
 library(leaflet)
@@ -550,7 +556,7 @@ shinyServer(function(input, output) {
   
   # Nombre d'inscrit concernés par la carte
   output$text_map2 <- renderText({
-    paste(nrow(df_map[df_map$course == input$sel_MOOC & df_map$session == input$sel_Sess,]),"inscrits ayant donnés une réponse")
+    paste(nrow(df_map[df_map$course == input$sel_MOOC & df_map$session == input$sel_Sess,]),"inscrits ayant renseignés leur localisation")
   })
   
   #Carte

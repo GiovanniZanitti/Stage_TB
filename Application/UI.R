@@ -1,3 +1,9 @@
+# Code écrit par Giovanni Zanitti (giovanni.zanitti@gmail.com)
+# Dernière MAJ 04/08/16
+# Ce fichier contient toute les lignes de commandes nécessaire à produire l'interface du tableau de bord
+# Il va de paire avec le fichier UI.R
+
+
 library(shiny)
 library(leaflet)
 library(magrittr)
@@ -140,7 +146,7 @@ shinyUI(fluidPage(
                  h2(textOutput("text_map")),
                  textOutput("text_map2"),
                  # Carte des inscrits par pays d'origines en fonction du MOOC et de la session sélectionnés
-                 leafletOutput("MapPos", width = "100%", height="500"),
+                 leafletOutput("MapPos", width = "100%", height="500")
                  # h3(textOutput("text_top10")),
                  # textOutput("Hors France"),
                  # leafletOutput("map_top10")

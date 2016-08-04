@@ -1,3 +1,10 @@
+# Code écrit par Giovanni Zanitti (giovanni.zanitti@gmail.com)
+# Dernière MAJ 04/08/16
+# Ce fichier contient l'import des données pour le tableau de bord ainsi que quelques manipulations sur celles-ci
+# Il est appelé par les fichiers server.R et UI.R et est donc indispensable au bon fonctionnement du tableau de bord
+
+
+
 library(sqldf)
 library(ggplot2)
 library(leaflet)
